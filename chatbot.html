@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fittium — Free 3-Day Health Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1e7d4b;
+  --green-light:#25a362;
+  --green-glow:#2ecc71;
+  --dark:#0f1e16;
+  --text:#1a2e20;
+  --muted:#5a7a62;
+  --cream:#f0faf4;
+  --white:#ffffff;
+}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);color:var(--text);overflow:hidden;}
+
+/* CHAT CONTAINER */
+.chat-page{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:linear-gradient(160deg,#0a1a0f 0%,#1a3d25 100%);
+  position:relative;
+  overflow:hidden;
+}
+
+.chat-page::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(46,204,113,.08),transparent 70%);
+  pointer-events:none;
+}
+
+/* HEADER */
+.chat-header{
+  background:rgba(15,30,22,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(46,204,113,.2);
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+
+.header-avatar{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--green),var(--green-light));
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(46,204,113,.25);
+}
+
+.header-info h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:.5px;
+}
+
+.header-info .status{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:.72rem;
+  color:var(--green-glow);
+  margin-top:2px;
+}
+
+.status-dot{
+  width:6px;height:6px;
+  background:var(--green-glow);
+  border-radius:50%;
+  animation:blink 1.5s infinite;
+}
+
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.progress-bar{
+  margin-left:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+
+.progress-track{
+  width:80px;height:4px;
+  background:rgba(255,255,255,.1);
+  border-radius:4px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--green),var(--green-glow));
+  border-radius:4px;
+  transition:width .5s ease;
+  width:0%;
+}
+
+.progress-text{
+  font-size:.65rem;
+  color:rgba(255,255,255,.4);
+}
+
+/* MESSAGES AREA */
+.messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  scroll-behavior:smooth;
+}
+
+.messages::-webkit-scrollbar{width:3px;}
+.messages::-webkit-scrollbar-track{background:transparent;}
+.messages::-webkit-scrollbar-thumb{background:rgba(46,204,113,.3);border-radius:3px;}
+
+/* BUBBLES */
+.bubble{
+  max-width:82%;
+  animation:bubbleIn .35s ease both;
+}
+
+@keyframes bubbleIn{
+  from{opacity:0;transform:translateY(12px) scale(.96);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.bubble.bot{align-self:flex-start;}
+.bubble.user{align-self:flex-end;}
+
+.bubble-inner{
+  padding:13px 18px;
+  border-radius:18px;
+  font-size:.92rem;
+  line-height:1.6;
+}
+
+.bubble.bot .bubble-inner{
+  background:rgba(30,125,75,.85);
+  color:#fff;
+  border-bottom-left-radius:4px;
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(46,204,113,.2);
+}
+
+.bubble.user .bubble-inner{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  border-bottom-right-radius:4px;
+  border:1px solid rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);
+}
+
+/* TYPING INDICATOR */
+.typing{
+  align-self:flex-start;
+  animation:bubbleIn .3s ease;
+}
+
+.typing-dots{
+  background:rgba(30,125,75,.7);
+  border:1px solid rgba(46,204,113,.2);
+  padding:13px 18px;
+  border-radius:18px;
+  border-bottom-left-radius:4px;
+  display:flex;
+  gap:5px;
+  align-items:center;
+}
+
+.typing-dots span{
+  width:7px;height:7px;
+  background:rgba(255,255,255,.6);
+  border-radius:50%;
+  animation:typingDot 1.2s infinite;
+}
+
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+
+@keyframes typingDot{
+  0%,60%,100%{transform:translateY(0);}
+  30%{transform:translateY(-6px);}
+}
+
+/* INPUT AREA */
+.input-area{
+  padding:14px 16px 20px;
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+
+/* TEXT INPUT */
+.text-input-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.text-input{
+  flex:1;
+  background:rgba(255,255,255,.08);
+  border:1.5px solid rgba(255,255,255,.15);
+  border-radius:50px;
+  padding:13px 20px;
+  color:#fff;
+  font-family:'Outfit',sans-serif;
+  font-size:.92rem;
+  outline:none;
+  transition:border-color .2s,background .2s;
+}
+
+.text-input::placeholder{color:rgba(255,255,255,.35);}
+.text-input:focus{
+  border-color:var(--green-glow);
+  background:rgba(46,204,113,.08);
+}
+
+.send-btn{
+  width:48px;height:48px;
+  background:linear-gradient(135deg,var(--green),var(--green-light));
+  border:none;
+  border-radius:50%;
+  color:#fff;
+  font-size:1.2rem;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:transform .2s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.send-btn:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(30,125,75,.5);}
+.send-btn:active{transform:scale(.96);}
+
+/* CHOICE BUTTONS */
+.choices{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.choice-btn{
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.2);
+  border-radius:14px;
+  padding:13px 18px;
+  color:#fff;
+  font-family:'Outfit',sans-serif;
+  font-size:.88rem;
+  font-weight:500;
+  cursor:pointer;
+  text-align:left;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.choice-btn:hover{
+  background:rgba(46,204,113,.15);
+  border-color:var(--green-glow);
+  transform:translateX(4px);
+}
+
+.choice-btn:active{transform:translateX(2px) scale(.98);}
+
+/* OFFER CARD */
+.offer-bubble{
+  background:linear-gradient(135deg,rgba(30,125,75,.9),rgba(37,163,99,.8));
+  border:1px solid rgba(46,204,113,.4);
+  border-radius:18px;
+  border-bottom-left-radius:4px;
+  padding:20px;
+  color:#fff;
+  max-width:90%;
+  align-self:flex-start;
+  backdrop-filter:blur(8px);
+  animation:bubbleIn .4s ease both;
+}
+
+.offer-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem;
+  font-weight:700;
+  margin-bottom:14px;
+  color:#fff;
+}
+
+.offer-item{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  margin-bottom:8px;
+  font-size:.82rem;
+  line-height:1.5;
+}
+
+.offer-check{color:var(--green-glow);font-size:.9rem;flex-shrink:0;margin-top:1px;}
+
+.offer-divider{
+  border:none;
+  border-top:1px solid rgba(255,255,255,.2);
+  margin:14px 0;
+}
+
+.offer-price{
+  text-align:center;
+  padding:10px;
+  background:rgba(0,0,0,.2);
+  border-radius:10px;
+}
+
+.price-old{
+  font-size:.78rem;
+  color:rgba(255,255,255,.5);
+  text-decoration:line-through;
+}
+
+.price-new{
+  font-size:1.3rem;
+  font-weight:700;
+  color:var(--green-glow);
+  display:block;
+  margin:4px 0;
+}
+
+.price-slots{
+  font-size:.75rem;
+  color:rgba(255,255,255,.8);
+}
+
+/* CONFIRMATION */
+.confirm-bubble{
+  background:rgba(15,30,22,.9);
+  border:1px solid rgba(46,204,113,.3);
+  border-radius:18px;
+  padding:20px;
+  color:#fff;
+  max-width:90%;
+  align-self:flex-start;
+  animation:bubbleIn .4s ease both;
+}
+
+.confirm-title{
+  font-size:1rem;
+  font-weight:700;
+  color:var(--green-glow);
+  margin-bottom:12px;
+}
+
+.confirm-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:6px;
+  font-size:.82rem;
+  color:rgba(255,255,255,.85);
+}
+
+.confirm-label{color:rgba(255,255,255,.5);font-size:.78rem;}
+
+/* WA BUTTON */
+.wa-action-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:linear-gradient(135deg,#1a7a4a,#25d366);
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  padding:16px 24px;
+  font-family:'Outfit',sans-serif;
+  font-size:.95rem;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:10px;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 6px 24px rgba(37,211,102,.3);
+  text-decoration:none;
+}
+
+.wa-action-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(37,211,102,.4);}
+
+/* HIDDEN */
+.hidden{display:none!important;}
+
+/* RESTART BTN */
+.restart-btn{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.5);
+  border-radius:50px;
+  padding:8px 20px;
+  font-family:'Outfit',sans-serif;
+  font-size:.75rem;
+  cursor:pointer;
+  margin:8px auto 0;
+  display:block;
+  transition:all .2s;
+}
+
+.restart-btn:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+</style>
+</head>
+<body>
+
+<div class="chat-page">
+
+  <!-- HEADER -->
+  <div class="chat-header">
+    <div class="header-avatar">🌿</div>
+    <div class="header-info">
+      <h3>FITTIUM Health Coach</h3>
+      <div class="status"><span class="status-dot"></span> Online — Responding instantly</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Step 0 of 7</div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages" id="messages"></div>
+
+  <!-- INPUT AREA -->
+  <div class="input-area" id="inputArea">
+    <!-- Text input (default) -->
+    <div class="text-input-row" id="textInputRow">
+      <input type="text" class="text-input" id="textInput" placeholder="Type your answer..." autocomplete="off">
+      <button class="send-btn" id="sendBtn" onclick="handleTextInput()">➤</button>
+    </div>
+    <!-- Choices -->
+    <div class="choices hidden" id="choicesRow"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const data = {};
+let step = 0;
+const totalSteps = 7;
+
+// ─── STEPS DEFINITION ────────────────────────────────────
+const steps = [
+  // 0 — WELCOME
+  {
+    type: 'bot-sequence',
+    messages: [
+      '🌿 Welcome to <strong>FITTIUM!</strong>',
+      'You\'ve just taken the FIRST step towards a healthier, energetic and confident you! 💪',
+      'This <strong>FREE 3-Day Personalized Health Plan</strong> is designed specifically for YOUR body and lifestyle.',
+      'Takes just 2 minutes to set up! ⏱️ Let\'s start...',
+      '😊 What is your <strong>Full Name?</strong>'
+    ],
+    input: { type: 'text', placeholder: 'Type your full name...', key: 'name' }
+  },
+  // 1 — VILLAGE
+  {
+    type: 'bot-sequence',
+    messages: ['Wonderful! Nice to meet you, <strong>{name}</strong>! 🙏', 'Which <strong>Village or Area</strong> do you live in?'],
+    input: { type: 'text', placeholder: 'Your village / area name...', key: 'village' }
+  },
+  // 2 — CITY
+  {
+    type: 'bot-sequence',
+    messages: ['Got it! 📍 Which <strong>City or District</strong> are you from?'],
+    input: { type: 'text', placeholder: 'Your city / district...', key: 'city' }
+  },
+  // 3 — WHATSAPP
+  {
+    type: 'bot-sequence',
+    messages: ['Great! Now let\'s get your contact details so we can send your FREE plan directly to you! 📲', 'What is your <strong>WhatsApp Number?</strong>'],
+    input: { type: 'text', placeholder: 'WhatsApp number (e.g. 9876543210)...', key: 'whatsapp' }
+  },
+  // 4 — GOAL
+  {
+    type: 'bot-sequence',
+    messages: ['Perfect! Almost there 🌿', 'What is your <strong>PRIMARY health goal</strong> right now?'],
+    input: {
+      type: 'choices',
+      key: 'goal',
+      options: [
+        '⚖️ Lose Weight',
+        '💪 Gain Healthy Weight',
+        '🔥 Reduce Belly Fat',
+        '⚡ Boost Energy Levels',
+        '😣 Fix Digestion & Bloating',
+        '🌟 Overall Healthy Lifestyle',
+        '😴 Better Sleep & Recovery'
+      ]
+    }
+  },
+  // 5 — PROBLEM
+  {
+    type: 'bot-sequence',
+    messages: ['One more question! What is your <strong>biggest health challenge</strong> right now?'],
+    input: {
+      type: 'choices',
+      key: 'problem',
+      options: [
+        '🫃 Stubborn Belly Fat',
+        '😴 Always Tired & Low Energy',
+        '😣 Bloating & Gas After Eating',
+        '🔥 Acidity & Indigestion',
+        '⏰ No Time for Health',
+        '🍽️ Don\'t Know What to Eat',
+        '😞 All of the Above'
+      ]
+    }
+  },
+  // 6 — OFFER + CONFIRM
+  {
+    type: 'offer',
+    confirmKey: 'confirm'
+  },
+  // 7 — FINAL
+  {
+    type: 'final'
+  }
+];
+
+// ─── HELPERS ─────────────────────────────────────────────
+const messagesEl = document.getElementById('messages');
+const textInputRow = document.getElementById('textInputRow');
+const choicesRow = document.getElementById('choicesRow');
+const textInput = document.getElementById('textInput');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+
+function updateProgress(){
+  const pct = Math.round((step / totalSteps) * 100);
+  progressFill.style.width = pct + '%';
+  progressText.textContent = `Step ${Math.min(step, totalSteps)} of ${totalSteps}`;
+}
+
+function scrollBottom(){
+  setTimeout(() => messagesEl.scrollTop = messagesEl.scrollHeight, 100);
+}
+
+function addBotBubble(html, delay=0){
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'bubble bot';
+      div.innerHTML = `<div class="bubble-inner">${html}</div>`;
+      messagesEl.appendChild(div);
+      scrollBottom();
+      resolve();
+    }, delay);
+  });
+}
+
+function addUserBubble(text){
+  const div = document.createElement('div');
+  div.className = 'bubble user';
+  div.innerHTML = `<div class="bubble-inner">${text}</div>`;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function showTyping(){
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  messagesEl.appendChild(div);
+  scrollBottom();
+}
+
+function hideTyping(){
+  const t = document.getElementById('typing-indicator');
+  if(t) t.remove();
+}
+
+function interpolate(str){
+  return str.replace(/\{(\w+)\}/g, (_, k) => data[k] || '');
+}
+
+function showTextInput(placeholder){
+  textInputRow.classList.remove('hidden');
+  choicesRow.classList.add('hidden');
+  textInput.placeholder = placeholder || 'Type your answer...';
+  textInput.value = '';
+  setTimeout(() => textInput.focus(), 300);
+}
+
+function showChoices(options){
+  textInputRow.classList.add('hidden');
+  choicesRow.classList.remove('hidden');
+  choicesRow.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = opt;
+    btn.onclick = () => handleChoice(opt);
+    choicesRow.appendChild(btn);
+  });
+}
+
+function hideInput(){
+  textInputRow.classList.add('hidden');
+  choicesRow.classList.add('hidden');
+}
+
+// ─── BOT SEQUENCE ─────────────────────────────────────────
+async function runBotSequence(messages, inputConfig){
+  hideInput();
+  for(let i=0; i<messages.length; i++){
+    showTyping();
+    const delay = Math.min(400 + messages[i].length * 18, 1400);
+    await new Promise(r => setTimeout(r, delay));
+    hideTyping();
+    await addBotBubble(interpolate(messages[i]));
+    if(i < messages.length - 1) await new Promise(r => setTimeout(r, 200));
+  }
+  if(inputConfig){
+    if(inputConfig.type === 'text') showTextInput(inputConfig.placeholder);
+    else if(inputConfig.type === 'choices') showChoices(inputConfig.options);
+  }
+}
+
+// ─── OFFER STEP ───────────────────────────────────────────
+async function runOfferStep(){
+  hideInput();
+  showTyping();
+  await new Promise(r => setTimeout(r, 800));
+  hideTyping();
+
+  // Offer card bubble
+  const offerDiv = document.createElement('div');
+  offerDiv.className = 'offer-bubble';
+  offerDiv.innerHTML = `
+    <div class="offer-title">🎁 Here's Your FREE 3-Day Plan!</div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 1</strong> — FREE BMI Check + Full Body Health Assessment</span></div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 1</strong> — Personalized Baseline Diet Plan</span></div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 2</strong> — Custom Meal Plan (Breakfast, Lunch, Dinner & Snacks)</span></div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 2</strong> — Foods To Eat & Avoid for YOUR body</span></div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 3</strong> — Energy Boosting Daily Habit Guide</span></div>
+    <div class="offer-item"><span class="offer-check">✅</span><span><strong>Day 3</strong> — 30-Day Transformation Roadmap</span></div>
+    <div class="offer-item"><span class="offer-check">🎁</span><span><strong>BONUS</strong> — WhatsApp Personal Support for 3 Days</span></div>
+    <div class="offer-item"><span class="offer-check">🎁</span><span><strong>BONUS</strong> — Lifestyle Correction Tips</span></div>
+    <hr class="offer-divider">
+    <div class="offer-price">
+      <div class="price-old">Total Value: ₹2,999</div>
+      <span class="price-new">YOUR PRICE: FREE 🎉</span>
+      <div class="price-slots">⚠️ Only 5 slots available this week!</div>
+    </div>
+  `;
+  messagesEl.appendChild(offerDiv);
+  scrollBottom();
+
+  await new Promise(r => setTimeout(r, 600));
+  showTyping();
+  await new Promise(r => setTimeout(r, 800));
+  hideTyping();
+  await addBotBubble('⚠️ This FREE offer is only for people who are <strong>SERIOUS</strong> about their health. Once 5 slots are filled, this offer closes!');
+  await new Promise(r => setTimeout(r, 400));
+  await addBotBubble(`<strong>${data.name}</strong>, are you ready to start your FREE 3-Day Health Transformation? 🚀`);
+
+  showChoices(['✅ YES! I Want My FREE Plan!', '🤔 Tell Me More First']);
+}
+
+// ─── FINAL STEP ───────────────────────────────────────────
+async function runFinalStep(){
+  hideInput();
+  showTyping();
+  await new Promise(r => setTimeout(r, 1000));
+  hideTyping();
+  await addBotBubble('🎉 <strong>CONGRATULATIONS!</strong> Your FREE 3-Day Health Plan slot is <strong>CONFIRMED!</strong> ✅');
+
+  await new Promise(r => setTimeout(r, 400));
+
+  // Confirmation card
+  const confirmDiv = document.createElement('div');
+  confirmDiv.className = 'confirm-bubble';
+  const waMsg = encodeURIComponent(
+    `🌿 *NEW FITTIUM LEAD*\n\n` +
+    `👤 *Name:* ${data.name}\n` +
+    `📍 *Location:* ${data.village}, ${data.city}\n` +
+    `📱 *WhatsApp:* ${data.whatsapp}\n` +
+    `🎯 *Goal:* ${data.goal}\n` +
+    `⚠️ *Challenge:* ${data.problem}\n\n` +
+    `✅ Customer confirmed FREE 3-Day Plan!`
+  );
+  confirmDiv.innerHTML = `
+    <div class="confirm-title">📋 Your Details Confirmed!</div>
+    <div class="confirm-row"><span class="confirm-label">👤 Name:</span> ${data.name}</div>
+    <div class="confirm-row"><span class="confirm-label">📍 Location:</span> ${data.village}, ${data.city}</div>
+    <div class="confirm-row"><span class="confirm-label">📱 WhatsApp:</span> ${data.whatsapp}</div>
+    <div class="confirm-row"><span class="confirm-label">🎯 Goal:</span> ${data.goal}</div>
+    <div class="confirm-row"><span class="confirm-label">⚠️ Challenge:</span> ${data.problem}</div>
+  `;
+  messagesEl.appendChild(confirmDiv);
+  scrollBottom();
+
+  await new Promise(r => setTimeout(r, 500));
+  showTyping();
+  await new Promise(r => setTimeout(r, 900));
+  hideTyping();
+  await addBotBubble('⏰ <strong>What Happens Next:</strong><br>✅ Our health coach contacts you on WhatsApp within 60 minutes<br>✅ You receive your Day 1 plan today itself<br>✅ Your 3-day transformation begins tomorrow morning! 🌿');
+
+  await new Promise(r => setTimeout(r, 400));
+  await addBotBubble('👇 Tap below to send your details on WhatsApp for <strong>INSTANT response!</strong>');
+
+  // WA Button
+  const waDiv = document.createElement('div');
+  waDiv.style.cssText = 'align-self:flex-start;width:90%;animation:bubbleIn .4s ease both;';
+  waDiv.innerHTML = `
+    <a href="https://wa.me/918735892714?text=${waMsg}" target="_blank" class="wa-action-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.168 1.595 5.934L.057 23.57a.75.75 0 00.914.914l5.675-1.53A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.704 9.704 0 01-4.96-1.36l-.356-.213-3.698.997.984-3.61-.234-.372A9.75 9.75 0 1112 21.75z"/></svg>
+      Send Details on WhatsApp Now
+    </a>
+    <p style="color:rgba(255,255,255,.3);font-size:.68rem;text-align:center;margin-top:10px;">⚠️ Individual results may vary. Lifestyle & nutrition guidance only. Not a medicine.</p>
+    <button class="restart-btn" onclick="restartBot()">↩ Start Over</button>
+  `;
+  messagesEl.appendChild(waDiv);
+  scrollBottom();
+}
+
+// ─── HANDLERS ────────────────────────────────────────────
+function handleTextInput(){
+  const val = textInput.value.trim();
+  if(!val) return;
+  const currentStep = steps[step];
+  data[currentStep.input.key] = val;
+  addUserBubble(val);
+  step++;
+  updateProgress();
+  setTimeout(runCurrentStep, 400);
+}
+
+function handleChoice(val){
+  const currentStep = steps[step];
+  if(currentStep.type === 'bot-sequence'){
+    data[currentStep.input.key] = val;
+  } else if(currentStep.type === 'offer'){
+    data[currentStep.confirmKey] = val;
+  }
+  addUserBubble(val);
+  step++;
+  updateProgress();
+  setTimeout(runCurrentStep, 400);
+}
+
+// Enter key
+document.getElementById('textInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') handleTextInput();
+});
+
+function runCurrentStep(){
+  if(step >= steps.length){ runFinalStep(); return; }
+  const s = steps[step];
+  if(s.type === 'bot-sequence') runBotSequence(s.messages, s.input);
+  else if(s.type === 'offer') runOfferStep();
+  else if(s.type === 'final') runFinalStep();
+}
+
+function restartBot(){
+  Object.keys(data).forEach(k => delete data[k]);
+  step = 0;
+  messagesEl.innerHTML = '';
+  updateProgress();
+  runCurrentStep();
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+updateProgress();
+runCurrentStep();
+</script>
+</body>
+</html>

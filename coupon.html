@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fittium — Claim Your Free Day Pass</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1e7d4b;--green-light:#25a362;--green-glow:#2ecc71;
+  --dark:#0f1e16;--text:#1a2e20;--muted:#5a7a62;
+}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--dark);overflow:hidden;}
+
+.chat-page{height:100vh;display:flex;flex-direction:column;background:linear-gradient(160deg,#0a1a0f 0%,#1a3d25 100%);position:relative;overflow:hidden;}
+.chat-page::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(46,204,113,.08),transparent 70%);pointer-events:none;}
+
+/* HEADER */
+.chat-header{background:rgba(15,30,22,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(46,204,113,.2);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;position:relative;z-index:10;}
+.header-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--green),var(--green-light));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;box-shadow:0 0 0 3px rgba(46,204,113,.25);}
+.header-info h3{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:.5px;}
+.header-info .status{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--green-glow);margin-top:2px;}
+.status-dot{width:6px;height:6px;background:var(--green-glow);border-radius:50%;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.progress-bar{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.progress-track{width:80px;height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-glow));border-radius:4px;transition:width .5s ease;width:0%;}
+.progress-text{font-size:.65rem;color:rgba(255,255,255,.4);}
+
+/* MESSAGES */
+.messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.messages::-webkit-scrollbar{width:3px;}
+.messages::-webkit-scrollbar-thumb{background:rgba(46,204,113,.3);border-radius:3px;}
+
+/* BUBBLES */
+.bubble{max-width:82%;animation:bubbleIn .35s ease both;}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(12px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+.bubble.bot{align-self:flex-start;}
+.bubble.user{align-self:flex-end;}
+.bubble-inner{padding:13px 18px;border-radius:18px;font-size:.92rem;line-height:1.6;}
+.bubble.bot .bubble-inner{background:rgba(30,125,75,.85);color:#fff;border-bottom-left-radius:4px;backdrop-filter:blur(8px);border:1px solid rgba(46,204,113,.2);}
+.bubble.user .bubble-inner{background:rgba(255,255,255,.12);color:#fff;border-bottom-right-radius:4px;border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+
+/* TYPING */
+.typing{align-self:flex-start;animation:bubbleIn .3s ease;}
+.typing-dots{background:rgba(30,125,75,.7);border:1px solid rgba(46,204,113,.2);padding:13px 18px;border-radius:18px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center;}
+.typing-dots span{width:7px;height:7px;background:rgba(255,255,255,.6);border-radius:50%;animation:typingDot 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+
+/* INPUT */
+.input-area{padding:14px 16px 20px;flex-shrink:0;position:relative;z-index:10;}
+.text-input-row{display:flex;gap:10px;align-items:center;}
+.text-input{flex:1;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:50px;padding:13px 20px;color:#fff;font-family:'Outfit',sans-serif;font-size:.92rem;outline:none;transition:border-color .2s,background .2s;}
+.text-input::placeholder{color:rgba(255,255,255,.35);}
+.text-input:focus{border-color:var(--green-glow);background:rgba(46,204,113,.08);}
+.send-btn{width:48px;height:48px;background:linear-gradient(135deg,var(--green),var(--green-light));border:none;border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;flex-shrink:0;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;}
+.send-btn:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(30,125,75,.5);}
+.choices{display:flex;flex-direction:column;gap:8px;}
+.choice-btn{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 18px;color:#fff;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:10px;}
+.choice-btn:hover{background:rgba(46,204,113,.15);border-color:var(--green-glow);transform:translateX(4px);}
+.hidden{display:none!important;}
+
+/* COUPON CARD */
+.coupon-wrap{align-self:flex-start;width:92%;animation:bubbleIn .5s ease both;margin:4px 0;}
+.coupon-card{background:linear-gradient(135deg,#0f2d1a,#1a4a28);border:2px solid rgba(46,204,113,.5);border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 0 1px rgba(46,204,113,.1);}
+.coupon-top{background:linear-gradient(135deg,var(--green),var(--green-light));padding:20px 22px;text-align:center;position:relative;}
+.coupon-top::after{content:'';position:absolute;bottom:-12px;left:0;right:0;height:24px;background:linear-gradient(135deg,var(--green),var(--green-light));clip-path:none;}
+.coupon-brand{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:3px;}
+.coupon-tagline{font-size:.72rem;color:rgba(255,255,255,.8);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.coupon-badge{display:inline-block;background:rgba(0,0,0,.25);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:50px;margin-top:10px;}
+.coupon-mid{padding:20px 22px;}
+.coupon-code-label{font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.coupon-code{font-family:'Courier New',monospace;font-size:1.5rem;font-weight:700;color:var(--green-glow);letter-spacing:4px;background:rgba(46,204,113,.1);border:1.5px dashed rgba(46,204,113,.4);border-radius:10px;padding:12px 16px;text-align:center;margin-bottom:16px;}
+.coupon-details{display:flex;flex-direction:column;gap:8px;}
+.coupon-row{display:flex;align-items:flex-start;gap:10px;font-size:.82rem;color:rgba(255,255,255,.85);}
+.coupon-icon{font-size:.9rem;flex-shrink:0;width:20px;}
+.coupon-divider{border:none;border-top:1px dashed rgba(255,255,255,.15);margin:14px 0;position:relative;}
+.coupon-divider::before,.coupon-divider::after{content:'';position:absolute;top:-8px;width:16px;height:16px;background:var(--dark);border-radius:50%;}
+.coupon-divider::before{left:-24px;}
+.coupon-divider::after{right:-24px;}
+.coupon-bottom{background:rgba(0,0,0,.2);padding:14px 22px;text-align:center;}
+.coupon-validity{font-size:.72rem;color:rgba(255,255,255,.5);}
+.coupon-validity strong{color:#ff6b6b;}
+.coupon-watermark{font-size:.62rem;color:rgba(255,255,255,.2);margin-top:4px;}
+
+/* WA BTN */
+.wa-action-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#1a7a4a,#25d366);color:#fff;border:none;border-radius:14px;padding:15px 24px;font-family:'Outfit',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;width:100%;margin-top:10px;transition:transform .2s,box-shadow .2s;box-shadow:0 6px 24px rgba(37,211,102,.3);text-decoration:none;}
+.wa-action-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(37,211,102,.4);}
+
+.save-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.08);color:#fff;border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:13px 24px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;width:100%;margin-top:8px;transition:all .2s;}
+.save-btn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);}
+
+.restart-btn{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);border-radius:50px;padding:8px 20px;font-family:'Outfit',sans-serif;font-size:.72rem;cursor:pointer;margin:10px auto 0;display:block;transition:all .2s;}
+.restart-btn:hover{color:#fff;border-color:rgba(255,255,255,.3);}
+</style>
+</head>
+<body>
+<div class="chat-page">
+  <div class="chat-header">
+    <div class="header-avatar">🌿</div>
+    <div class="header-info">
+      <h3>FITTIUM Health Coach</h3>
+      <div class="status"><span class="status-dot"></span> Online — Responding instantly</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Step 0 of 5</div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area" id="inputArea">
+    <div class="text-input-row" id="textInputRow">
+      <input type="text" class="text-input" id="textInput" placeholder="Type your answer..." autocomplete="off">
+      <button class="send-btn" onclick="handleTextInput()">➤</button>
+    </div>
+    <div class="choices hidden" id="choicesRow"></div>
+  </div>
+</div>
+
+<script>
+const data = {};
+let step = 0;
+const totalSteps = 5;
+const msgs = document.getElementById('messages');
+const textInputRow = document.getElementById('textInputRow');
+const choicesRow = document.getElementById('choicesRow');
+const textInput = document.getElementById('textInput');
+
+function updateProgress(){
+  const pct = Math.round((step/totalSteps)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = `Step ${Math.min(step,totalSteps)} of ${totalSteps}`;
+}
+
+function scrollBottom(){setTimeout(()=>msgs.scrollTop=msgs.scrollHeight,80);}
+
+function addBotBubble(html,delay=0){
+  return new Promise(r=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='bubble bot';
+      d.innerHTML=`<div class="bubble-inner">${html}</div>`;
+      msgs.appendChild(d);scrollBottom();r();
+    },delay);
+  });
+}
+
+function addUserBubble(text){
+  const d=document.createElement('div');
+  d.className='bubble user';
+  d.innerHTML=`<div class="bubble-inner">${text}</div>`;
+  msgs.appendChild(d);scrollBottom();
+}
+
+function showTyping(){
+  const d=document.createElement('div');
+  d.className='typing';d.id='typ';
+  d.innerHTML=`<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(d);scrollBottom();
+}
+
+function hideTyping(){const t=document.getElementById('typ');if(t)t.remove();}
+
+function ip(s){return s.replace(/\{(\w+)\}/g,(_,k)=>data[k]||'');}
+
+function showTextInput(ph){
+  textInputRow.classList.remove('hidden');
+  choicesRow.classList.add('hidden');
+  textInput.placeholder=ph||'Type your answer...';
+  textInput.value='';
+  setTimeout(()=>textInput.focus(),300);
+}
+
+function showChoices(opts){
+  textInputRow.classList.add('hidden');
+  choicesRow.classList.remove('hidden');
+  choicesRow.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.innerHTML=o;
+    b.onclick=()=>handleChoice(o);
+    choicesRow.appendChild(b);
+  });
+}
+
+function hideInput(){
+  textInputRow.classList.add('hidden');
+  choicesRow.classList.add('hidden');
+}
+
+function generateCoupon(){
+  const num = Math.floor(1000+Math.random()*9000);
+  return `FITTIUM-FREE-${num}`;
+}
+
+const steps = [
+  {
+    msgs:[
+      '🌿 Welcome to <strong>FITTIUM!</strong>',
+      '"<em>Your Path to a Healthier You</em>" starts right here! 💚',
+      'We are giving you a <strong>FREE Day Pass</strong> to our Nutrition Club in Salepur, Cuttack!',
+      '🎁 Includes: FREE Healthy Shake + BMI Check + Personal Health Consultation',
+      'Just fill in your details and get your <strong>FREE Coupon instantly!</strong> ✅',
+      '😊 First, what is your <strong>Correct Full Name?</strong>'
+    ],
+    input:{type:'text',ph:'Enter your full name exactly...',key:'name'}
+  },
+  {
+    msgs:['Thank you, <strong>{name}</strong>! 🙏','What is your <strong>Mobile Number?</strong>'],
+    input:{type:'text',ph:'Your 10-digit mobile number...',key:'mobile'}
+  },
+  {
+    msgs:['Got it! 📱 Now please share your <strong>Email Address</strong> — your coupon confirmation will be sent here too!'],
+    input:{type:'text',ph:'Your email address...',key:'email'}
+  },
+  {
+    msgs:['Almost done! 🌿 What is your <strong>main health goal?</strong>'],
+    input:{
+      type:'choices',key:'goal',
+      opts:[
+        '⚖️ Lose Weight',
+        '💪 Gain Healthy Weight',
+        '🔥 Reduce Belly Fat',
+        '⚡ Boost Energy Levels',
+        '😣 Fix Digestion & Bloating',
+        '🌟 Overall Healthy Lifestyle'
+      ]
+    }
+  },
+  {
+    msgs:['Perfect! Generating your <strong>FREE Coupon</strong> now... 🎁'],
+    input:null
+  }
+];
+
+async function runSeq(messages,inputCfg){
+  hideInput();
+  for(let i=0;i<messages.length;i++){
+    showTyping();
+    const d=Math.min(350+messages[i].length*16,1300);
+    await new Promise(r=>setTimeout(r,d));
+    hideTyping();
+    await addBotBubble(ip(messages[i]));
+    if(i<messages.length-1) await new Promise(r=>setTimeout(r,180));
+  }
+  if(!inputCfg){
+    // No input means trigger final coupon generation
+    setTimeout(runFinal, 600);
+    return;
+  }
+  if(inputCfg.type==='text') showTextInput(inputCfg.ph);
+  else showChoices(inputCfg.opts);
+}
+
+async function runFinal(){
+  hideInput();
+  showTyping();
+  await new Promise(r=>setTimeout(r,1200));
+  hideTyping();
+
+  const code = generateCoupon();
+  data.coupon = code;
+  
+  // Auto-send to YOUR WhatsApp immediately
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN');
+  const autoMsg = encodeURIComponent(
+    `🌿 *NEW FITTIUM COUPON CLAIMED!*\n\n`+
+    `👤 *Name:* ${data.name}\n`+
+    `📱 *Mobile:* ${data.mobile}\n`+
+    `📧 *Email:* ${data.email}\n`+
+    `🎯 *Goal:* ${data.goal}\n`+
+    `🎫 *Coupon Code:* ${code}\n`+
+    `📅 *Date & Time:* ${dateStr}\n\n`+
+    `📍 Salepur, Cuttack | 7:30–9:30 AM\n`+
+    `✅ Please send their FREE Day Pass coupon!`
+  );
+  // Auto open WhatsApp with lead details
+  setTimeout(() => {
+    window.open(`https://wa.me/918735892714?text=${autoMsg}`, '_blank');
+  }, 800);
+
+  // Coupon card
+  const wrap = document.createElement('div');
+  wrap.className = 'coupon-wrap';
+  wrap.innerHTML = `
+    <div class="coupon-card">
+      <div class="coupon-top">
+        <div class="coupon-brand">🌿 FITTIUM</div>
+        <div class="coupon-tagline">Your Path to a Healthier You</div>
+        <div class="coupon-badge">🎁 FREE DAY PASS</div>
+      </div>
+      <div class="coupon-mid">
+        <div class="coupon-code-label">Your Coupon Code</div>
+        <div class="coupon-code">${code}</div>
+        <div class="coupon-details">
+          <div class="coupon-row"><span class="coupon-icon">👤</span><span><strong>Name:</strong> ${data.name}</span></div>
+          <div class="coupon-row"><span class="coupon-icon">📱</span><span><strong>Mobile:</strong> ${data.mobile}</span></div>
+          <div class="coupon-row"><span class="coupon-icon">📧</span><span><strong>Email:</strong> ${data.email}</span></div>
+          <div class="coupon-row"><span class="coupon-icon">🎯</span><span><strong>Goal:</strong> ${data.goal}</span></div>
+          <hr class="coupon-divider">
+          <div class="coupon-row"><span class="coupon-icon">📍</span><span><strong>Location:</strong> Salepur, Cuttack</span></div>
+          <div class="coupon-row"><span class="coupon-icon">🕐</span><span><strong>Timing:</strong> 7:30 AM – 9:30 AM</span></div>
+          <div class="coupon-row"><span class="coupon-icon">🌿</span><span><strong>Coach:</strong> Fittium Health Team</span></div>
+          <div class="coupon-row"><span class="coupon-icon">✅</span><span><strong>Includes:</strong> FREE Shake + BMI Check + Health Consultation</span></div>
+        </div>
+      </div>
+      <div class="coupon-bottom">
+        <div class="coupon-validity">⚠️ Valid for <strong>ONE TIME USE ONLY</strong> · 1 Person Only</div>
+        <div class="coupon-watermark">fittium.com · Individual results may vary</div>
+      </div>
+    </div>
+  `;
+  msgs.appendChild(wrap);
+  scrollBottom();
+
+  await new Promise(r=>setTimeout(r,500));
+  showTyping();
+  await new Promise(r=>setTimeout(r,900));
+  hideTyping();
+  await addBotBubble(`🎉 <strong>Congratulations ${data.name}!</strong> Your FREE Day Pass is confirmed!<br><br>📲 <strong>WhatsApp is opening automatically</strong> to confirm your slot!<br><br>📸 Screenshot this coupon and bring it to our Nutrition Club!<br><br>📍 Salepur, Cuttack<br>🕐 7:30 AM – 9:30 AM<br><br>See you there! 🌿`);
+
+  await new Promise(r=>setTimeout(r,400));
+
+  // WA notify button
+  const now2 = new Date();
+  const dateStr2 = now2.toLocaleDateString('en-IN') + ' ' + now2.toLocaleTimeString('en-IN');
+  const waMsg = encodeURIComponent(
+    `🌿 *NEW FITTIUM COUPON CLAIMED!*\n\n`+
+    `👤 *Name:* ${data.name}\n`+
+    `📱 *Mobile:* ${data.mobile}\n`+
+    `📧 *Email:* ${data.email}\n`+
+    `🎯 *Goal:* ${data.goal}\n`+
+    `🎫 *Coupon Code:* ${code}\n`+
+    `📅 *Date & Time:* ${dateStr2}\n\n`+
+    `📍 Salepur, Cuttack | 7:30–9:30 AM\n`+
+    `✅ Customer claimed FREE Day Pass!`
+  );
+
+  const actDiv = document.createElement('div');
+  actDiv.style.cssText='align-self:flex-start;width:92%;animation:bubbleIn .4s ease both;';
+  actDiv.innerHTML=`
+    <a href="https://wa.me/?text=${waMsg}" target="_blank" class="wa-action-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.168 1.595 5.934L.057 23.57a.75.75 0 00.914.914l5.675-1.53A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.704 9.704 0 01-4.96-1.36l-.356-.213-3.698.997.984-3.61-.234-.372A9.75 9.75 0 1112 21.75z"/></svg>
+      Confirm My Visit on WhatsApp
+    </a>
+    <button class="save-btn" onclick="window.print()">📸 Save / Print My Coupon</button>
+    <p style="color:rgba(255,255,255,.3);font-size:.68rem;text-align:center;margin-top:10px;">⚠️ Individual results may vary. Lifestyle & nutrition guidance only. Not a medicine.</p>
+    <button class="restart-btn" onclick="restartBot()">↩ Start Over</button>
+  `;
+  msgs.appendChild(actDiv);
+  scrollBottom();
+}
+
+function handleTextInput(){
+  const val=textInput.value.trim();
+  if(!val)return;
+  const s=steps[step];
+  data[s.input.key]=val;
+  addUserBubble(val);
+  step++;updateProgress();
+  setTimeout(runCurrent,400);
+}
+
+function handleChoice(val){
+  const s=steps[step];
+  data[s.input.key]=val;
+  addUserBubble(val);
+  step++;updateProgress();
+  setTimeout(runCurrent,400);
+}
+
+textInput.addEventListener('keydown',e=>{if(e.key==='Enter')handleTextInput();});
+
+function runCurrent(){
+  if(step>=steps.length){runFinal();return;}
+  const s=steps[step];
+  runSeq(s.msgs,s.input);
+}
+
+function restartBot(){
+  Object.keys(data).forEach(k=>delete data[k]);
+  step=0;msgs.innerHTML='';updateProgress();runCurrent();
+}
+
+updateProgress();
+runCurrent();
+</script>
+</body>
+</html>
